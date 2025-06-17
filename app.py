@@ -26,7 +26,7 @@ CORS(app)
 port = int(os.environ.get("PORT", os.environ.get("FLASK_PORT", 5000)))
 
 # Validate required environment variables
-required_env_vars = ["TAVILY_API_KEY", "GROQ_API_KEY", "mongo_uri"]
+required_env_vars = ["TAVILY_API_KEY", "GROQ_API_KEY", "MONGO_URI"]
 for var in required_env_vars:
     if not os.getenv(var):
         raise ValueError(f"Missing required environment variable: {var}")
