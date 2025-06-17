@@ -1,3 +1,4 @@
+import ssl
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from langchain.agents import Tool, initialize_agent
