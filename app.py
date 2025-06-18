@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
+# MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
 # Get port from environment (Elastic Beanstalk uses PORT, but we'll also check for common alternatives)
 port = int(os.environ.get("PORT", os.environ.get("FLASK_PORT", 5000)))
 
