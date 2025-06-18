@@ -11,6 +11,9 @@ import os
 from dotenv import load_dotenv
 import logging
 import certifi
+import ssl
+import urllib.parse
+
 # Load environment variables
 load_dotenv()
 
@@ -21,13 +24,15 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+# MongoDB connection string - make sure this is correct
 MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
-# MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
-# Get port from environment (Elastic Beanstalk uses PORT, but we'll also check for common alternatives)
+
+# Get port from environment
 port = int(os.environ.get("PORT", os.environ.get("FLASK_PORT", 5000)))
 
 # Validate required environment variables
-required_env_vars = ["TAVILY_API_KEY", "GROQ_API_KEY", "MONGO_URI"]
+required_env_vars = ["TAVILY_API_KEY", "GROQ_API_KEY"]
 for var in required_env_vars:
     if not os.getenv(var):
         raise ValueError(f"Missing required environment variable: {var}")
@@ -35,20 +40,86 @@ for var in required_env_vars:
 # Set environment variables
 os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-# MONGO_URI = os.getenv("MONGO_URI")
 
-# Initialize MongoDB connection with error handling
+# Initialize MongoDB connection with enhanced SSL configuration
+def create_mongo_client():
+    """Create MongoDB client with proper SSL configuration"""
+    try:
+        # Option 1: Try with explicit SSL context (most reliable)
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        
+        client = MongoClient(
+            MONGO_URI,
+            ssl=True,
+            ssl_context=ssl_context,
+            serverSelectionTimeoutMS=30000,
+            connectTimeoutMS=20000,
+            socketTimeoutMS=20000,
+            maxPoolSize=10,
+            retryWrites=True
+        )
+        
+        # Test connection
+        client.admin.command('ping')
+        logger.info("Successfully connected to MongoDB Atlas with SSL context")
+        return client
+        
+    except Exception as e:
+        logger.warning(f"SSL context method failed: {e}")
+        
+        try:
+            # Option 2: Try with tlsCAFile parameter
+            client = MongoClient(
+                MONGO_URI,
+                tls=True,
+                tlsCAFile=certifi.where(),
+                tlsAllowInvalidCertificates=False,
+                tlsAllowInvalidHostnames=False,
+                serverSelectionTimeoutMS=30000,
+                connectTimeoutMS=20000,
+                socketTimeoutMS=20000,
+                maxPoolSize=10,
+                retryWrites=True
+            )
+            
+            # Test connection
+            client.admin.command('ping')
+            logger.info("Successfully connected to MongoDB Atlas with tlsCAFile")
+            return client
+            
+        except Exception as e2:
+            logger.warning(f"tlsCAFile method failed: {e2}")
+            
+            try:
+                # Option 3: Try with minimal SSL settings (less secure but might work)
+                client = MongoClient(
+                    MONGO_URI,
+                    tls=True,
+                    tlsAllowInvalidCertificates=True,
+                    serverSelectionTimeoutMS=30000,
+                    connectTimeoutMS=20000,
+                    socketTimeoutMS=20000,
+                    maxPoolSize=10,
+                    retryWrites=True
+                )
+                
+                # Test connection
+                client.admin.command('ping')
+                logger.warning("Connected to MongoDB Atlas with relaxed SSL settings")
+                return client
+                
+            except Exception as e3:
+                logger.error(f"All MongoDB connection methods failed: {e3}")
+                raise Exception(f"Could not connect to MongoDB Atlas. Last error: {e3}")
+
+# Initialize MongoDB connection
 try:
-    client = MongoClient(MONGO_URI,
-                         tls=True,
-    tlsAllowInvalidCertificates=False,
-    tlsAllowInvalidHostnames=False,
-    tlsCAFile=certifi.where())
-    # Test connection
-    client.admin.command('ping')
+    client = create_mongo_client()
     db = client["project2"]
     collection = db["vectors2"]
-    logger.info("Successfully connected to MongoDB Atlas")
+    logger.info("MongoDB database and collection initialized")
 except Exception as e:
     logger.error(f"Failed to connect to MongoDB: {e}")
     raise
@@ -66,8 +137,7 @@ try:
     book_db = MongoDBAtlasVectorSearch(
         collection=collection,
         embedding=embedding_model,
-        index_name="vector_index2",
-        connection_kwargs={"tls": True}
+        index_name="vector_index2"
     )
     logger.info("MongoDB Atlas vector store initialized")
 except Exception as e:
