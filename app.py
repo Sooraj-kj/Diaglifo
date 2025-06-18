@@ -10,7 +10,7 @@ from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
 import logging
-
+import certifi
 # Load environment variables
 load_dotenv()
 
@@ -38,7 +38,11 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 # Initialize MongoDB connection with error handling
 try:
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(MONGO_URI,
+                         tls=True,
+    tlsAllowInvalidCertificates=False,
+    tlsAllowInvalidHostnames=False,
+    tlsCAFile=certifi.where())
     # Test connection
     client.admin.command('ping')
     db = client["project2"]
