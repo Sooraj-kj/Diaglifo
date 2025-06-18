@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
-
+MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
 # Get port from environment (Elastic Beanstalk uses PORT, but we'll also check for common alternatives)
 port = int(os.environ.get("PORT", os.environ.get("FLASK_PORT", 5000)))
 
@@ -34,7 +34,7 @@ for var in required_env_vars:
 # Set environment variables
 os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-MONGO_URI = os.getenv("MONGO_URI")
+# MONGO_URI = os.getenv("MONGO_URI")
 
 # Initialize MongoDB connection with error handling
 try:
