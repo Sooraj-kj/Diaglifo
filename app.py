@@ -26,7 +26,7 @@ app = Flask(__name__)
 CORS(app)
 
 # MongoDB connection string - make sure this is correct
-MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
+# MONGO_URI = "mongodb+srv://soorajkj:soo123@project1.dwlnnzr.mongodb.net/?retryWrites=true&w=majority&appName=project1"
 
 # Get port from environment
 port = int(os.environ.get("PORT", os.environ.get("FLASK_PORT", 5000)))
@@ -40,7 +40,7 @@ for var in required_env_vars:
 # Set environment variables
 os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
+MONGO_URI = os.getenv("MONGO")
 # Initialize MongoDB connection with enhanced SSL configuration
 def create_mongo_client():
     """Create MongoDB client with proper SSL configuration"""
