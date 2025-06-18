@@ -40,7 +40,7 @@ for var in required_env_vars:
 # Set environment variables
 os.environ["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-MONGO_URI = os.getenv("MONGO")
+MONGO_URI = os.getenv("MONGO_URI")
 # Initialize MongoDB connection with enhanced SSL configuration
 def create_mongo_client():
     """Create MongoDB client with proper SSL configuration"""
@@ -126,7 +126,7 @@ except Exception as e:
 
 # Initialize embedding model
 try:
-    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
     logger.info("Embedding model loaded successfully")
 except Exception as e:
     logger.error(f"Failed to load embedding model: {e}")
